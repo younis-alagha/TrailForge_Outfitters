@@ -8,4 +8,4 @@ This folder contains supporting materials for the data warehouse project.
 
 ## Architecture
 
-![Data Warehouse Architecture](docs/DataWarehouse%20Arcitechture.png)
+![Data Warehouse Architecture](architechture-diagram.png)
