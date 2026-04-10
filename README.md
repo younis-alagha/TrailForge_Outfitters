@@ -1,104 +1,259 @@
-## Project Description
+# TrailForge Outfitters — Retail Intelligence Data Warehouse
 
-This project builds a complete data warehouse using SQL Server to transform raw CSV data into structured, business-ready insights.
+## Overview
 
-### Data Layers
+This project builds a complete retail data warehouse for **TrailForge Outfitters** using SQL Server.  
+The goal is to transform raw CRM and ERP CSV data into structured, analytics-ready tables that support reporting, dashboarding, and business decision-making.
 
-The data moves through three layers:
-
-- **Bronze** → stores raw data exactly as it is  
-- **Silver** → cleans and standardizes the data  
-- **Gold** → organizes data into a star schema for reporting and analysis  
-
-The goal is to simulate a real ETL process by loading, cleaning, and transforming data step by step instead of jumping straight into analysis.
-
-In the end, the data is ready to answer business questions like sales trends, customer behavior, and product performance.
+The solution follows a Medallion Architecture (Bronze → Silver → Gold) and is designed to support Power BI dashboards focused on revenue drivers, profitability, product performance, and customer value.
 
 ---
 
-## Data Source
+# Architecture
 
-The project uses CSV files as the raw data source (customers, products, sales, etc.).
+The warehouse follows a layered architecture:
 
-These files are stored in a location accessible by SQL Server, especially when running through Docker.
+Source → Bronze → Silver → Gold → Power BI
 
----
+Each layer has a specific responsibility:
 
-## Database Setup
+- Bronze → raw data ingestion  
+- Silver → data cleaning and standardization  
+- Gold → star schema for analytics  
+- Power BI → dashboards and insights  
 
-A SQL Server database is used (local or Docker).
-
-The database is organized into three schemas:
-
-- `bronze` → raw data  
-- `silver` → cleaned data  
-- `gold` → final reporting layer  
+This structure separates ingestion, transformation, and reporting logic.
 
 ---
 
-## Bronze Layer (Raw Data)
+# Data Sources
 
-- Tables match the source files exactly  
-- Data is loaded using `BULK INSERT`  
-- No transformations are applied  
-- Tables are truncated before each load  
+The TrailForge Outfitters warehouse integrates six datasets.
 
-This layer acts as a raw backup of the source data.
+## CRM Data
+- Customers  
+- Products  
+- Sales  
+
+## ERP Data
+- Customer demographics  
+- Location  
+- Product categories  
+
+All datasets are provided as CSV files and loaded into SQL Server.
 
 ---
 
-## Silver Layer (Data Cleaning)
+# Database Setup
+
+The SQL Server database is organized into three schemas:
+
+bronze → raw data  
+silver → cleaned data  
+gold → analytics-ready model  
+
+This structure keeps ingestion, transformation, and reporting separated.
+
+---
+
+# Bronze Layer (Raw Data)
+
+The Bronze layer stores raw source data exactly as received.
+
+Characteristics:
+
+- Tables match source files exactly  
+- Data loaded using BULK INSERT  
+- No transformations applied  
+- Tables truncated before each load  
+
+This layer acts as a raw landing zone and preserves source data integrity.
+
+Tables include:
+
+- bronze.crm_cust_info  
+- bronze.crm_prd_info  
+- bronze.crm_sales_details  
+- bronze.erp_cust_az12  
+- bronze.erp_loc_a101  
+- bronze.erp_px_cat_g1v2  
+
+---
+
+# Silver Layer (Data Cleaning)
+
+The Silver layer transforms raw data into clean and standardized tables.
+
+Cleaning logic includes:
+
+- Removing duplicate records  
+- Handling missing values  
+- Fixing inconsistent formats  
+- Standardizing text values  
+- Applying business rules  
+- Validating relationships  
+
+This layer prepares data for analytics and reporting.
+
+Tables include:
+
+- silver.crm_cust_info  
+- silver.crm_prd_info  
+- silver.crm_sales_details  
+- silver.erp_cust_az12  
+- silver.erp_loc_a101  
+- silver.erp_px_cat_g1v2  
+
+---
+
+# Gold Layer (Analytics)
+
+The Gold layer organizes data into a dimensional model designed for reporting.
+
+Star Schema:
+
+Fact Table  
+- fact_sales  
+
+Dimension Tables  
+- dim_customers  
+- dim_products  
+- dim_date  
+
+This model allows analysis by:
+
+- product  
+- customer  
+- category  
+- location  
+- date  
+
+The Gold layer is built using views for flexibility and performance.
+
+---
+
+# ETL Process
+
+The ETL pipeline runs in three stages:
+
+Step 1 — Load Bronze  
+Raw CSV files are loaded into Bronze tables using BULK INSERT.
+
+Step 2 — Transform Silver  
+Data is cleaned, standardized, and validated.
+
+Step 3 — Build Gold  
+Dimension and fact views are created for analytics.
+
+Stored procedures manage the pipeline execution.
+
+---
+
+# Data Validation
+
+Data quality checks are included throughout the pipeline:
+
+- Row count validation  
+- Duplicate detection  
+- Missing value checks  
+- Data consistency checks  
+- Relationship validation  
+- Standardized category validation  
+
+These checks ensure reliable reporting.
+
+---
+
+# Data Model
+
+The dimensional model is designed as a star schema.
+
+fact_sales  
+Contains transaction-level sales data
+
+dim_products  
+Product attributes and category hierarchy
+
+dim_customers  
+Customer demographics and location
+
+dim_date  
+Calendar dimension for time-based analysis
+
+This structure supports fast Power BI queries.
+
+---
+
+# Analytics Capabilities
+
+The model enables analysis such as:
+
+Sales Trends  
+- revenue over time  
+- growth analysis  
+- seasonality  
+
+Product Performance  
+- top products  
+- low margin products  
+- revenue vs profit  
+
+Category Performance  
+- category contribution  
+- profitability by category  
+- product mix analysis  
+
+Customer Value  
+- repeat customers  
+- lifetime value  
+- average order value  
+
+---
+
+# Power BI Dashboard
+
+The Gold layer connects directly to Power BI.
+
+Dashboard Pages:
+
+Overview  
+- total sales  
+- profit  
+- margin  
+- trend  
+
+Category Performance  
+- revenue by category  
+- profit by category  
+- contribution  
+
+Product Performance  
+- top products  
+- bottom products  
+- margin comparison  
+
+Customer Value  
+- top customers  
+- repeat customers  
+- order frequency  
+
+---
+
+# Final Output
+
+At the end of the pipeline:
 
 - Data is cleaned and standardized  
-- Handles:
-  - Missing values  
-  - Incorrect formats  
-  - Duplicate records  
-- Applies basic business rules  
+- Star schema is built  
+- Analytics views are created  
+- Power BI connects to Gold layer  
+- Dashboard provides business insights  
 
-This is where the data becomes usable.
+The TrailForge Outfitters Retail Intelligence Dashboard helps answer:
 
----
-
-## Gold Layer (Analytics)
-
-- Data is structured into a star schema  
-- Includes:
-  - Fact table (sales)  
-  - Dimension tables (customers, products, etc.)  
-- Built using views for flexibility  
-
-This layer is designed for reporting and analysis.
-
----
-
-## ETL Process
-
-The pipeline runs in three steps:
-
-1. Load raw data into Bronze  
-2. Transform data into Silver  
-3. Query final data from Gold  
-
-Stored procedures are used to manage and control the process.
-
----
-
-## Data Validation
-
-Basic checks are included to ensure data quality:
-
-- Row count comparisons  
-- Missing values  
-- Duplicate detection  
-- Consistency between layers  
-
----
-
-## Final Output
-
-At the end of the process:
-
-- Data is clean and structured  
-- The Gold layer is ready for analysis  
-- Queries can be used to analyze sales trends, customer behavior, and product performance  
+- What drives revenue  
+- What drives profit  
+- Which products perform best  
+- Which categories underperform  
+- Who are the most valuable customers  
+- Are sales growing or declining  
